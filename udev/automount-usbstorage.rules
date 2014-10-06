@@ -1,0 +1,16 @@
+# Auto mount USB storage devices
+#
+# Partitions will be mounted in /media using the device's label or the name if no label is set
+# Example /media/my_storage or /media/sdb1
+# pmount is required
+#
+
+# Get device info
+IMPORT{program}="/sbin/blkid -o udev -p %N" 
+ 
+# Get a label if present, otherwise use device default  
+ENV{ID_FS_LABEL}!="", ENV{mount_name}="%E{ID_FS_LABEL}"  
+ENV{ID_FS_LABEL}=="", ENV{mount_name}="%k"  
+
+ACTION=="add", KERNEL=="sd[a-z]*", SUBSYSTEMS=="usb", RUN+="/usr/bin/pmount --sync --umask 000 %k %E{mount_name}"
+ACTION=="remove", KERNEL=="sd[a-z]*", SUBSYSTEMS=="usb", RUN+="/usr/bin/pumount %E{mount_name}"
